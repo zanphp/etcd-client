@@ -8,7 +8,7 @@ class EtcdClient
 {
     const EndpointSelectionRandom = 1;
 
-    private $config;
+    private $endpoints = [];
 
     private $selectionMode;
 
@@ -28,13 +28,15 @@ class EtcdClient
      */
     public function __construct(array $endpoints, $selectionMode = self::EndpointSelectionRandom)
     {
-        if (!isset($config["endpoints"]) || empty($config["endpoints"])) {
+        $this->selectionMode = $selectionMode;
+        foreach ($endpoints as $endpoint) {
+            if (isset($endpoint["host"]) && isset($endpoint["port"])) {
+                $this->endpoints[] = [$endpoint["host"], $endpoint["port"]];
+            }
+        }
+        if (empty($this->endpoints)) {
             throw new \InvalidArgumentException("empty etcd endpoints in etcd clientV2");
         }
-
-        $this->selectionMode = $selectionMode;
-        $this->config = $config;
-
     }
 
     public function keysAPI($prefix = "")
@@ -45,8 +47,7 @@ class EtcdClient
     public function selectEndpoint()
     {
         if ($this->selectionMode === static::EndpointSelectionRandom) {
-            $endpoints = $this->config["endpoints"];
-            return $endpoints[array_rand($endpoints)];
+            return $this->endpoints[array_rand($this->endpoints)];
         } else {
             throw new \BadMethodCallException("not support");
         }

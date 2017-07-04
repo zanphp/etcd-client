@@ -20,6 +20,8 @@ class KeysAPI
 
     private $client;
 
+    const V2_PREFIX = "/v2/keys";
+
     /**
      * KeysAPI constructor.
      * @param EtcdClient $client
@@ -28,14 +30,15 @@ class KeysAPI
     public function __construct(EtcdClient $client, $prefix = "")
     {
         $prefix = trim($prefix, "/");
-        $this->prefix = "/v2/keys/$prefix";
+        $v2 = static::V2_PREFIX;
+        $this->prefix = rtrim("$v2/$prefix", "/");
         $this->client = $client;
     }
 
     private function buildKey($key)
     {
         $prefix = trim($key, "/");
-        return "{$this->prefix}/{$prefix}";
+        return rtrim("{$this->prefix}/{$prefix}", "/");
     }
 
     /**
@@ -46,9 +49,15 @@ class KeysAPI
     private function parseResponse($response)
     {
         $raw = $response->getBody();
-        $json = Json::decode($raw, true);
 
-        if (!is_array($json)) {
+        $json = null;
+        try {
+            $json = Json::decode($raw, true);
+        }
+        catch (\Throwable $e) {}
+        catch (\Exception $e) {}
+
+        if (isset($e) || !is_array($json)) {
             throw new UnexpectedResponseException("unexpected etcdv2 response $raw");
         }
 
