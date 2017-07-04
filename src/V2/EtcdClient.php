@@ -8,35 +8,49 @@ class EtcdClient
 {
     const EndpointSelectionRandom = 1;
 
+    private $config;
+
     private $endpoints = [];
 
     private $selectionMode;
 
     /**
      * EtcdClientV2 constructor.
-     * @param array $endpoints
-     * [
+     * @param array $config
+     * @param int $selectionMode *
+     * }
+     * @internal param array $endpoints [* [
+     * "timeout" => 3000,
+     * "endpoints" => [
      *      [
      *          host =>
      *          port =>
      *      ],
      *      ......
      *  ],
-     * @param int $selectionMode*
-     * }
-     *
+     * ]
      */
-    public function __construct(array $endpoints, $selectionMode = self::EndpointSelectionRandom)
+    public function __construct(array $config, $selectionMode = self::EndpointSelectionRandom)
     {
-        $this->selectionMode = $selectionMode;
-        foreach ($endpoints as $endpoint) {
-            if (isset($endpoint["host"]) && isset($endpoint["port"])) {
-                $this->endpoints[] = [$endpoint["host"], $endpoint["port"]];
-            }
-        }
-        if (empty($this->endpoints)) {
+        $config += [ "timeout" => 3000 ];
+        if (!isset($config["endpoints"]) || !is_array($config["endpoints"])) {
             throw new \InvalidArgumentException("empty etcd endpoints in etcd clientV2");
         }
+
+        $endpoints = [];
+        foreach ($config["endpoints"] as $endpoint) {
+            if (isset($endpoint["host"]) && isset($endpoint["port"])) {
+                $endpoints[] = [$endpoint["host"], $endpoint["port"]];
+            }
+        }
+
+        if (empty($endpoints)) {
+            throw new \InvalidArgumentException("empty etcd endpoints in etcd clientV2");
+        }
+
+        $config["endpoints"] = $endpoints;
+        $this->config = $config;
+        $this->selectionMode = $selectionMode;
     }
 
     public function keysAPI($prefix = "")
@@ -47,10 +61,16 @@ class EtcdClient
     public function selectEndpoint()
     {
         if ($this->selectionMode === static::EndpointSelectionRandom) {
-            return $this->endpoints[array_rand($this->endpoints)];
+            $endpoints = $this->config["endpoints"];
+            return $endpoints[array_rand($endpoints)];
         } else {
             throw new \BadMethodCallException("not support");
         }
+    }
+
+    public function getDefaultTimeout()
+    {
+        return $this->config["timeout"];
     }
 
     public function authAPI()

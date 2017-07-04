@@ -17,8 +17,9 @@ interface Subscriber
 
     /**
      * notify
+     * @param Watcher $watcher
      * @param Response|Error $response
      * @return mixed
      */
-    public function onChange($response);
+    public function onChange(Watcher $watcher, $response);
 }

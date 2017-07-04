@@ -17,6 +17,10 @@ class Watcher
 
     private $subscriber;
 
+    private $running;
+
+    private $opts;
+
     public function __construct($key, KeysAPI $keysAPI, Subscriber $subscriber)
     {
         $this->index = 0;
@@ -27,25 +31,53 @@ class Watcher
 
     public function watch(array $opts = [])
     {
-        $task = $this->doWatch($opts);
+        $this->opts = $opts;
+        $this->running = true;
+        $task = $this->doWatch();
         Task::execute($task);
     }
 
-    private function doWatch($opts = [])
+    public function stopWatch()
     {
-        while (true) {
+        $this->running = false;
+    }
+
+    public function getSubscriber()
+    {
+        return $this->subscriber;
+    }
+
+    public function isWatching()
+    {
+        return $this->running;
+    }
+
+    /**
+     * @param array $opts
+     * setOpts(["timeout" => int]) ms
+     * setOpts(["recursive" => bool])
+     * ...
+     */
+    public function setOpts(array $opts)
+    {
+        $this->opts = array_merge($this->opts, $opts);
+    }
+
+    private function doWatch()
+    {
+        while ($this->running) {
             try {
-                $opts["waitIndex"] = $this->subscriber->getCurrentIndex();
+                $this->opts["waitIndex"] = $this->subscriber->getCurrentIndex();
 
                 /** @var Response $response */
-                $response = (yield $this->keysApi->watch($this->key, $opts));
+                $response = (yield $this->keysApi->watchOnce($this->key, $this->opts));
 
                 /** @var $response Response|Error */
                 if ($response->index > 0) {
                     $this->subscriber->updateWaitIndex($response->index);
                 }
 
-                $this->subscriber->onChange($response);
+                $this->subscriber->onChange($this, $response);
             } catch (HttpClientTimeoutException $e) {
                 yield taskSleep(50);
             } catch (\Throwable $t) {

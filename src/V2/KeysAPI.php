@@ -20,6 +20,8 @@ class KeysAPI
 
     private $client;
 
+    private $defaultTimeout;
+
     const V2_PREFIX = "/v2/keys";
 
     /**
@@ -33,6 +35,7 @@ class KeysAPI
         $v2 = static::V2_PREFIX;
         $this->prefix = rtrim("$v2/$prefix", "/");
         $this->client = $client;
+        $this->defaultTimeout = $this->client->getDefaultTimeout();
     }
 
     private function buildKey($key)
@@ -100,7 +103,7 @@ class KeysAPI
             "recursive" => false,
             "sort" => false, // 配合顺序创建使用
             "quorum" => false,
-            "timeout" => 3000,
+            "timeout" => $this->defaultTimeout,
         ];
 
         $params = [];
@@ -182,7 +185,7 @@ class KeysAPI
             "refresh" => false,
             "dir" => false,
             "noValueOnSuccess" => false,
-            "timeout" => 3000,
+            "timeout" => $this->defaultTimeout,
         ];
 
         $params = [];
@@ -211,14 +214,17 @@ class KeysAPI
             $params["noValueOnSuccess"] = true;
         }
         if ($value !== null) {
-            $params["value"] = JSON::encode($value);
+            if (is_array($value) || is_object($value)) {
+                $value = JSON::encode($value);
+            }
+            $params["value"] = $value;
         }
 
         list($host, $port) = $this->client->selectEndpoint();
         $path = $this->buildKey($key);
 
         $httpClient = new HttpClient($host, $port);
-        $httpClient->setMethod("PUT");
+        $httpClient->setMethod($method);
         $httpClient->setTimeout($opts["timeout"]);
         $httpClient->setUri($path);
         $httpClient->setBody(http_build_query($params));
@@ -270,6 +276,8 @@ class KeysAPI
     public function createInOrder($dir, $value, $ttl = 0, array $opts = [])
     {
         $opts["ttl"] = $ttl;
+        // !!! in order 方式创建, prevExist 项目无效 !!!
+        $opts["prevExist"] = false;
         yield $this->set($dir, $value, $opts, "POST");
     }
 
@@ -293,7 +301,7 @@ class KeysAPI
         yield $this->set($key, $value, $opts);
     }
 
-    public function refresh($key, $ttl, array $opts = [])
+    public function refreshTTL($key, $ttl, array $opts = [])
     {
         $opts["ttl"] = $ttl;
         $opts["refresh"] = true;
@@ -338,7 +346,7 @@ class KeysAPI
             "prevIndex" => 0, // 配合处理cas delete
             "recursive" => false,
             "dir" => false,
-            "timeout" => 3000,
+            "timeout" => $this->defaultTimeout,
         ];
 
         $params = [];
@@ -362,22 +370,11 @@ class KeysAPI
         $httpClient = new HttpClient($host, $port);
         $httpClient->setMethod("DELETE");
         $httpClient->setTimeout($opts["timeout"]);
-        $httpClient->setUri($path);
-        $httpClient->setBody(http_build_query($params));
-        $httpClient->setHeader([
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ]);
+        $httpClient->setUri($path . "?" . http_build_query($params));
 
         $response = (yield $httpClient->build());
 
         yield $this->parseResponse($response);
-    }
-
-    public function dirTTL($dir, $ttl, array $opts = [])
-    {
-        $opts["dir"] = true;
-        $opts["ttl"] = $ttl;
-        yield $this->set($dir, null, $opts);
     }
 
     /**
@@ -414,6 +411,13 @@ class KeysAPI
     {
         $opts["prevIndex"] = $oldIndex;
         yield $this->delete($key, $opts);
+    }
+
+    public function dirTTL($dir, $ttl, array $opts = [])
+    {
+        $opts["dir"] = true;
+        $opts["ttl"] = $ttl;
+        yield $this->set($dir, null, $opts);
     }
 
     public function createDir($dir, $ttl = 0, array $opts = [])
@@ -469,12 +473,12 @@ class KeysAPI
      * }
      * @return \Generator
      */
-    public function watch($key, array $opts = [])
+    public function watchOnce($key, array $opts = [])
     {
         $opts += [
             "waitIndex" => 0,
             "recursive" => true,
-            "timeout" => 30000, // http long pooling
+            "timeout" => $this->defaultTimeout * 10, // http long pooling
         ];
 
         $params = ["wait" => true];
@@ -494,6 +498,16 @@ class KeysAPI
         $response = (yield $httpClient->get($path, $params, $opts["timeout"]));
 
         yield $this->parseResponse($response);
+    }
+
+    /**
+     * @param $key
+     * @param Subscriber $subscriber
+     * @return Watcher
+     */
+    public function watch($key, Subscriber $subscriber)
+    {
+        return new Watcher($key, $this, $subscriber);
     }
 
     /**

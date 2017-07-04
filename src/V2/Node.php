@@ -36,6 +36,11 @@ class Node
     public $modifiedIndex;
 
     /**
+     * @var string
+     */
+    public $expiration;
+
+    /**
      * @var int|null
      */
     public $ttl;
@@ -48,6 +53,8 @@ class Node
 
         if (isset($json["dir"])) {
             $this->dir = boolval($json["dir"]);
+        } else {
+            $this->dir = false;
         }
 
         if (isset($json["value"])) {
@@ -69,6 +76,14 @@ class Node
 
         if (isset($json["modifiedIndex"])) {
             $this->modifiedIndex = intval($json["modifiedIndex"]);
+        }
+
+        if (isset($json["expiration"])) {
+            $this->expiration = intval($json["expiration"]);
+        }
+
+        if (isset($json["ttl"])) {
+            $this->ttl = intval($json["ttl"]);
         }
     }
 }

@@ -29,12 +29,13 @@ class LocalSubscriber implements Subscriber
     }
 
     /**
+     * @param Watcher $watcher
      * @param Error|Response $response
      * @return mixed|void
      */
-    public function onChange($response)
+    public function onChange(Watcher $watcher, $response)
     {
         $subs = $this->subscriber;
-        $subs($response);
+        $subs($watcher, $response);
     }
 }

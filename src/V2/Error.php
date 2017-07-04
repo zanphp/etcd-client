@@ -53,7 +53,7 @@ class Error
     public function __construct(array $json)
     {
         if (isset($json["errorCode"])) {
-            $this->errorCode = intval($json["error"]);
+            $this->errorCode = intval($json["errorCode"]);
             if (isset($json["message"])) {
                 $this->message = $json["message"];
             }
@@ -65,11 +65,11 @@ class Error
         }
 
         if (isset($json["cause"])) {
-            $this->message = $json["cause"];
+            $this->cause = $json["cause"];
         }
 
         if (isset($json["index"])) {
-            $this->message = $json["index"];
+            $this->index = $json["index"];
         }
     }
 
