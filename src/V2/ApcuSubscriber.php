@@ -17,10 +17,9 @@ class ApcuSubscriber implements Subscriber
     }
 
     /**
-     * notify
      * @param Watcher $watcher
      * @param Response|Error $response
-     * @return mixed
+     * @return void
      */
     public function onChange(Watcher $watcher, $response)
     {

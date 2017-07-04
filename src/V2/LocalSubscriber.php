@@ -31,7 +31,7 @@ class LocalSubscriber implements Subscriber
     /**
      * @param Watcher $watcher
      * @param Error|Response $response
-     * @return mixed|void
+     * @return void
      */
     public function onChange(Watcher $watcher, $response)
     {

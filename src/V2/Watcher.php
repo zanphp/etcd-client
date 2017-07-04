@@ -67,17 +67,20 @@ class Watcher
     {
         while ($this->running) {
             try {
-                $this->opts["waitIndex"] = $this->subscriber->getCurrentIndex();
+                $waitIndex = $this->subscriber->getCurrentIndex();
+                if ($waitIndex) {
+                    $this->opts["waitIndex"] = $waitIndex;
+                } else {
+                    unset($this->opts["waitIndex"]);
+                }
 
                 /** @var Response $response */
                 $response = (yield $this->keysApi->watchOnce($this->key, $this->opts));
 
-                /** @var $response Response|Error */
-                if ($response->index > 0) {
-                    $this->subscriber->updateWaitIndex($response->index);
-                }
+                $this->updateWaitIndex($waitIndex, $response);
 
                 $this->subscriber->onChange($this, $response);
+
             } catch (HttpClientTimeoutException $e) {
                 yield taskSleep(50);
             } catch (\Throwable $t) {
@@ -87,6 +90,27 @@ class Watcher
                 echo_exception($ex);
                 yield taskSleep(50);
             }
+        }
+    }
+
+    private function updateWaitIndex($currentIndex, $response)
+    {
+        /** @var $response Response|Error */
+        if ($response instanceof Error) {
+            if ($response->index) {
+                $this->subscriber->updateWaitIndex($response->index + 1);
+            }
+        } else if ($response instanceof Response) {
+            $indexList = [ $currentIndex, $response->index ];
+
+            if ($node = $response->node) {
+                $indexList[] = $node->modifiedIndex;
+            }
+            if ($prevNode = $response->prevNode) {
+                $indexList[] = $prevNode->modifiedIndex;
+            }
+
+            $this->subscriber->updateWaitIndex(max(...$indexList) + 1);
         }
     }
 }

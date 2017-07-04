@@ -16,10 +16,9 @@ interface Subscriber
     public function updateWaitIndex($index);
 
     /**
-     * notify
      * @param Watcher $watcher
      * @param Response|Error $response
-     * @return mixed
+     * @return void
      */
     public function onChange(Watcher $watcher, $response);
 }

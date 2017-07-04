@@ -44,7 +44,6 @@ call_user_func(function() {
     $prefix = "/service_chain/app_to_chain_nodes";
     $keysAPI = $etcdClient->keysAPI($prefix);
 
-
     $clear = function() use($keysAPI) {
         $resp = (yield $keysAPI->delete("/a", [
             "dir" => true,
@@ -200,6 +199,21 @@ call_user_func(function() {
         swoole_event_exit();
     };
 
+    // watch 不存在的key 不会发生什么
+    $watchNotFoundKey = function() use($keysAPI, $clear) {
+        $resp = (yield $keysAPI->delete("/a/b/not_found", [ "recursive" => true ]));
+        print_r($resp);
+
+        try {
+            $resp = (yield $keysAPI->watchOnce("/a/b/not_found", [ "timeout" => 2000, ]));
+            print_r($resp);
+        } catch (HttpClientTimeoutException $ex) {
+            echo $ex;
+        }
+
+        yield $clear();
+    };
+
     $create = function() use($keysAPI, $clear) {
         $resp = (yield $keysAPI->create("/a/b/c", "hi"));
         print_r($resp);
@@ -307,5 +321,5 @@ call_user_func(function() {
     $casDeleteWithIndex = function() use($keysAPI) {};
 
 
-    Task::execute($watch());
+    Task::execute($watchNotFoundKey());
 });

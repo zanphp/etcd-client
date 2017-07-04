@@ -93,4 +93,9 @@ class Error
             return "Unknown Error($errorCode)";
         }
     }
+
+    public function __toString()
+    {
+        return "etcd response error [code=$this->errorCode, msg=$this->message, cause=$this->cause]";
+    }
 }
