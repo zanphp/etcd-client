@@ -3,7 +3,7 @@
 namespace ZanPHP\Component\EtcdClient\V2;
 
 
-use ZanPHP\Component\Cache\APCuStore;
+use ZanPHP\Contracts\Cache\ShareMemoryStore;
 use ZanPHP\Contracts\Cache\Store;
 
 class APCuSubscriber implements Subscriber
@@ -18,8 +18,7 @@ class APCuSubscriber implements Subscriber
     public function __construct(callable $subscriber)
     {
         $this->subscriber = $subscriber;
-        // TODO refactor to DI
-        $this->store = new APCuStore(spl_object_hash($this));
+        $this->store = make(ShareMemoryStore::class, spl_object_hash($this));
     }
 
     public function getCurrentIndex()
