@@ -17,7 +17,7 @@ interface Subscriber
 
     /**
      * @param Watcher $watcher
-     * @param Response|Error $response
+     * @param Response|Error $response 全量更新 response 返回get结果, 增量更新 watch 返回值
      * @return void
      */
     public function onChange(Watcher $watcher, $response);

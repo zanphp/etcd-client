@@ -23,14 +23,20 @@ class Response
 
     public $index;
 
-    public $clusterId; // TODO from header
+    /**
+     * @var Header
+     */
+    public $header;
 
     /**
      * Response constructor.
      * @param array $json
+     * @param Header $header
      */
-    public function __construct(array $json)
+    public function __construct(Header $header, array $json)
     {
+        $this->header = $header;
+
         if (isset($json["action"])) {
             $this->action = $json["action"];
         }

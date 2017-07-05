@@ -258,8 +258,8 @@ call_user_func(function() {
     $watch = function() use($keysAPI, $clear) {
         $i = 0;
 
-        $subscriber = new LocalSubscriber(function(Watcher $watcher, $resp) use(&$i) {
-            var_dump($resp);
+        $subscriber = new LocalSubscriber(function(Watcher $watcher, $watchResp) use(&$i) {
+            var_dump($watchResp);
             ++$i;
             if ($i > 2) {
                 $watcher->stopWatch();
@@ -301,7 +301,55 @@ call_user_func(function() {
         $watcher = $keysAPI->watch("/a/b/c", $subscriber);
         $watcher->watch([
             "timeout" => 1500,
+        ], false);
+    };
+
+    // 全量更新
+    $watch2 = function() use($keysAPI, $clear) {
+        $subscriber = new LocalSubscriber(function(Watcher $watcher, $getResp) {
+            print_r($getResp);
+        });
+
+        $change = function() use($keysAPI, &$change) {
+            try {
+                yield $keysAPI->set("/a/b/c", rand(1, 10));
+                yield taskSleep(1000);
+
+                // ttl refresh 貌似不触发 修改事件
+                yield $keysAPI->refreshTTL("/a/b/c", rand(1, 10));
+                yield taskSleep(1000);
+
+                yield $keysAPI->set("/a/b/c", rand(1, 10));
+                yield taskSleep(1000);
+
+                yield taskSleep(1000);
+                yield $keysAPI->delete("/a/b/c");
+                swoole_event_exit();
+            } catch (\Throwable $e) {
+
+            } catch (\Exception $e) {
+
+            }
+
+            if (isset($e)) {
+                yield taskSleep(1000);
+                Task::execute($change());
+            }
+        };
+
+        Task::execute($change());
+
+        $watcher = $keysAPI->watch("/a/b/c", $subscriber);
+        $watcher->watch([
+            "timeout" => 1500,
         ]);
+    };
+
+    $keyNotFoundHeaderInfo = function() use($keysAPI) {
+        $resp = (yield $keysAPI->get("/a/b/c/not_exist"));
+        print_r($resp);
+
+        swoole_event_exit();
     };
 
     $dirTTL = function() use($keysAPI) {};
@@ -321,5 +369,5 @@ call_user_func(function() {
     $casDeleteWithIndex = function() use($keysAPI) {};
 
 
-    Task::execute($watchNotFoundKey());
+    Task::execute($watch2());
 });

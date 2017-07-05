@@ -46,12 +46,17 @@ class Error
      */
     public $index;
 
+    public $header;
+
     /**
      * Error constructor.
+     * @param Header $header
      * @param array $json
      */
-    public function __construct(array $json)
+    public function __construct(Header $header, array $json)
     {
+        $this->header = $header;
+
         if (isset($json["errorCode"])) {
             $this->errorCode = intval($json["errorCode"]);
             if (isset($json["message"])) {
@@ -73,9 +78,14 @@ class Error
         }
     }
 
+    public function isEventIndexCleared()
+    {
+        return $this->errorCode === static::ErrorCodeEventIndexCleared;
+    }
+
     public function isKeyNotFound()
     {
-        return $this->errorCode == static::ErrorCodeKeyNotFound;
+        return $this->errorCode === static::ErrorCodeKeyNotFound;
     }
 
     public static function getName($errorCode)

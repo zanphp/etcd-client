@@ -64,10 +64,13 @@ class KeysAPI
             throw new UnexpectedResponseException("unexpected etcdv2 response $raw");
         }
 
+        $headers = $response->getHeaders();
+        $header = new Header($headers);
+
         if (isset($json["action"])) {
-            return new Response($json);
+            return new Response($header, $json);
         } elseif (isset($json["errorCode"]) || isset($json["error"])) {
-            return new Error($json);
+            return new Error($header, $json);
         } else {
             throw new UnexpectedResponseException("unexpected etcdv2 response $raw");
         }
@@ -436,11 +439,11 @@ class KeysAPI
      * To delete a directory that holds keys, you must add recursive=true.
      *
      * @param $dir
-     * @param $recursive
+     * @param bool $recursive
      * @param array $opts
      * @return \Generator
      */
-    public function deleteDir($dir, $recursive, array $opts = [])
+    public function deleteDir($dir, $recursive = true, array $opts = [])
     {
         $opts["recursive"] = $recursive;
         $opts["dir"] = true;
