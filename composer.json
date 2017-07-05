@@ -2,7 +2,7 @@
   "name": "zanphp/etcd-client",
   "require": {
     "php": ">=5.6",
-    "ZanPHP\\Contracts\\": "dev-master"
+    "zanphp/contracts": "dev-master"
   },
   "autoload": {
     "psr-4": {
