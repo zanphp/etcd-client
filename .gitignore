@@ -229,3 +229,4 @@ jspm_packages
 /.private
 composer.lock
 .idea
+TODO.md
