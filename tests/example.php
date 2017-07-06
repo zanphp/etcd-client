@@ -13,15 +13,15 @@ call_user_func(function() {
 
     $qaEndpoints = [
         [
-            "host" => "etcd0-qa.s.qima-inc.com",
+            "host" => "127.0.0.1",
             "port" => 2379,
         ],
         [
-            "host" => "etcd1-qa.s.qima-inc.com",
+            "host" => "127.0.0.1",
             "port" => 2379,
         ],
         [
-            "host" => "etcd2-qa.s.qima-inc.com",
+            "host" => "127.0.0.1",
             "port" => 2379,
         ],
     ];
