@@ -1,6 +1,6 @@
 <?php
 
-namespace ZanPHP\Component\EtcdClient\V2;
+namespace ZanPHP\EtcdClient\V2;
 
 use Zan\Framework\Network\Common\Exception\UnexpectedResponseException;
 use Zan\Framework\Network\Common\HttpClient;
@@ -9,7 +9,7 @@ use Zan\Framework\Utilities\Types\Json;
 
 /**
  * Class KeysAPI
- * @package ZanPHP\Component\EtcdClient
+ * @package ZanPHP\EtcdClient\V2
  *
  * 参考 https://coreos.com/etcd/docs/latest/v2/api.html 实现
  * opts参数为兼容以后可能使用etcd3-api抽象接口

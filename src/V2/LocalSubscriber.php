@@ -1,6 +1,6 @@
 <?php
 
-namespace ZanPHP\Component\EtcdClient\V2;
+namespace ZanPHP\EtcdClient\V2;
 
 
 class LocalSubscriber implements Subscriber

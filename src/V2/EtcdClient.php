@@ -1,6 +1,6 @@
 <?php
 
-namespace ZanPHP\Component\EtcdClient\V2;
+namespace ZanPHP\EtcdClient\V2;
 
 
 
@@ -9,8 +9,6 @@ class EtcdClient
     const EndpointSelectionRandom = 1;
 
     private $config;
-
-    private $endpoints = [];
 
     private $selectionMode;
 

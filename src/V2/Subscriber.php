@@ -1,11 +1,11 @@
 <?php
 
-namespace ZanPHP\Component\EtcdClient\V2;
+namespace ZanPHP\EtcdClient\V2;
 
 
 /**
  * Interface Subscriber
- * @package ZanPHP\Component\EtcdClient\V2
+ * @package ZanPHP\EtcdClient\V2
  *
  * waitIndex 进程内存储 或者 apcu共享内存存储
  */
