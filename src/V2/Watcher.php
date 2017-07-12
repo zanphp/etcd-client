@@ -35,18 +35,31 @@ class Watcher
     }
 
     /**
+     * 全量更新
      * @param array $watchOpts
-     * @param bool $fullUpdate 全量 or 增量
      * @param array $getOpts 全量方式请求参数
      */
-    public function watch(array $watchOpts = [],
-                          $fullUpdate = true,
-                          array $getOpts = ["recursive" => true])
+    public function watch(array $watchOpts = [], array $getOpts = [])
     {
-        $this->getOpts = $getOpts;
+        $this->getOpts = $getOpts + ["recursive" => true];
         $this->running = false;
         $this->watchOpts = $watchOpts;
-        $this->isFullUpdate = $fullUpdate;
+        $this->isFullUpdate = true;
+
+        $task = $this->doWatch();
+        Task::execute($task);
+    }
+
+    /**
+     * 增量更新
+     * @param array $watchOpts
+     */
+    public function watchIncrementally(array $watchOpts = [])
+    {
+        $this->running = false;
+        $this->watchOpts = $watchOpts;
+        $this->isFullUpdate = false;
+
         $task = $this->doWatch();
         Task::execute($task);
     }
@@ -90,7 +103,8 @@ class Watcher
 
         if (isset($e)) {
             Timer::after(1000, function() {
-                $this->watch($this->watchOpts);
+                $this->running = false;
+                Task::execute($this->doWatch());
             });
         }
 
@@ -112,25 +126,16 @@ class Watcher
                     sys_error("service chain etcd watch error: " . $error);
                     // 401 错误, 重新拉取后watch
                     if ($error->isEventIndexCleared()) {
-                        $this->watch($this->watchOpts);
+                        $this->running = false;
+                        Task::execute($this->doWatch());
                         return;
                     }
                 }
 
-                if ($this->isFullUpdate) {
-                    $getResp = (yield $this->keysApi->get($this->key, $this->getOpts)); // retry ~
-                    $nextIndex = $getResp->header->etcdIndex;
-                    $nextResp = $getResp;
-                } else {
-                    $nextIndex = $this->getNextWaitIndex($watchResp);
-                    $nextResp = $watchResp;
-                }
-
-                $this->subscriber->updateWaitIndex($nextIndex + 1);
-                $this->subscriber->onChange($this, $nextResp);
+                yield $this->updateWatchState($watchResp);
 
             } catch (HttpClientTimeoutException $e) {
-                yield taskSleep(10);
+                yield taskSleep(50);
 
             } catch (\Throwable $t) {
                 echo_exception($t);
@@ -141,6 +146,21 @@ class Watcher
                 yield taskSleep(50);
             }
         }
+    }
+
+    private function updateWatchState($watchResp)
+    {
+        if ($this->isFullUpdate) {
+            $getResp = (yield $this->keysApi->get($this->key, $this->getOpts)); // retry ~
+            $nextIndex = $getResp->header->etcdIndex;
+            $nextResp = $getResp;
+        } else {
+            $nextIndex = $this->getNextWaitIndex($watchResp);
+            $nextResp = $watchResp;
+        }
+
+        $this->subscriber->updateWaitIndex($nextIndex + 1);
+        $this->subscriber->onChange($this, $nextResp);
     }
 
     private function getNextWaitIndex($watchResp)

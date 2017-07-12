@@ -33,15 +33,15 @@ class KeysAPI
     {
         $prefix = trim($prefix, "/");
         $v2 = static::V2_PREFIX;
-        $this->prefix = rtrim("$v2/$prefix", "/");
+        $this->prefix = "$v2/$prefix";
         $this->client = $client;
         $this->defaultTimeout = $this->client->getDefaultTimeout();
     }
 
     private function buildKey($key)
     {
-        $prefix = trim($key, "/");
-        return rtrim("{$this->prefix}/{$prefix}", "/");
+        $key = trim($key, "/");
+        return "{$this->prefix}/{$key}";
     }
 
     /**
@@ -197,7 +197,7 @@ class KeysAPI
             $params["ttl"] = $opts["ttl"];
         }
         if (isset($opts["prevValue"])) {
-            $params["prevValue"] = $opts["prevExist"];
+            $params["prevValue"] = $opts["prevValue"];
         }
         if ($opts["prevIndex"] > 0) {
             $params["prevIndex"] = $opts["prevIndex"];
@@ -429,7 +429,7 @@ class KeysAPI
         yield $this->create($dir, null, $ttl, $opts);
     }
 
-    public function listDir($dir, $recursive, array $opts = [])
+    public function listDir($dir, $recursive = false, array $opts = [])
     {
         $opts["recursive"] = $recursive;
         yield $this->get($dir, $opts);
@@ -511,14 +511,5 @@ class KeysAPI
     public function watch($key, Subscriber $subscriber)
     {
         return new Watcher($key, $this, $subscriber);
-    }
-
-    /**
-     * Discover looks up the etcd servers for the domain.
-     * @param string $domain
-     */
-    public function discover($domain)
-    {
-        throw new \BadMethodCallException("not support still");
     }
 }

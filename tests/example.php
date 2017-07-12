@@ -60,6 +60,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($get());
 
     $getRecursive = function() use($keysAPI) {
         $resp = (yield $keysAPI->get("/", [
@@ -69,6 +70,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($getRecursive());
 
     $getNotFound = function() use($keysAPI) {
         $resp = (yield $keysAPI->get("/not_exist"));
@@ -80,6 +82,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($getNotFound());
 
     $set = function() use($keysAPI) {
         // 非目录
@@ -95,6 +98,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($set());
 
     $setValue = function() use($keysAPI) {
         $resp = (yield $keysAPI->set("/a/b/c", "hi"));
@@ -109,6 +113,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($setValue());
 
     $setTTL = function() use($keysAPI) {
         $resp = (yield $keysAPI->set("/a/b/c", "hi", [
@@ -124,6 +129,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($setTTL());
 
     $refreshTTL = function() use($keysAPI) {
         $resp = (yield $keysAPI->set("/a/b/c", "hi", [
@@ -147,6 +153,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($refreshTTL());
 
     $setDelDir = function() use($keysAPI) {
         // 已经存在的文件夹, 再次创建会出错 not is a file
@@ -164,6 +171,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($setDelDir());
 
     $delRecursive = function() use($keysAPI) {
         $resp = (yield $keysAPI->set("/a/b/e", null, ["dir" => true]));
@@ -179,6 +187,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($delRecursive());
 
 
     $watchOnce = function() use($keysAPI, $clear) {
@@ -198,6 +207,7 @@ call_user_func(function() {
 
         swoole_event_exit();
     };
+    // Task::execute($watchOnce());
 
     // watch 不存在的key 不会发生什么
     $watchNotFoundKey = function() use($keysAPI, $clear) {
@@ -213,6 +223,7 @@ call_user_func(function() {
 
         yield $clear();
     };
+    // Task::execute($watchNotFoundKey());
 
     $create = function() use($keysAPI, $clear) {
         $resp = (yield $keysAPI->create("/a/b/c", "hi"));
@@ -226,6 +237,7 @@ call_user_func(function() {
 
         yield $clear();
     };
+    // Task::execute($create());
 
     $createInOrder = function() use($keysAPI, $clear) {
         $resp = (yield $keysAPI->createInOrder("/a/b/c", "hi"));
@@ -238,6 +250,7 @@ call_user_func(function() {
 
         yield $clear();
     };
+    // Task::execute($createInOrder());
 
     $createHidden = function() use($keysAPI, $clear) {
         $resp = (yield $keysAPI->createHiddenNode("/a/b/hidden", "hi"));
@@ -245,6 +258,7 @@ call_user_func(function() {
 
         yield $clear();
     };
+    // Task::execute($createHidden());
 
     $update = function() use($keysAPI, $clear) {
         $resp = (yield $keysAPI->update("/a/b/not_exist", null));
@@ -254,6 +268,7 @@ call_user_func(function() {
 
         yield $clear();
     };
+    // Task::execute($update());
 
     $watch = function() use($keysAPI, $clear) {
         $i = 0;
@@ -299,10 +314,11 @@ call_user_func(function() {
         Task::execute($change());
 
         $watcher = $keysAPI->watch("/a/b/c", $subscriber);
-        $watcher->watch([
+        $watcher->watchIncrementally([
             "timeout" => 1500,
-        ], false);
+        ]);
     };
+    // Task::execute($watch());
 
     // 全量更新
     $watch2 = function() use($keysAPI, $clear) {
@@ -344,6 +360,7 @@ call_user_func(function() {
             "timeout" => 1500,
         ]);
     };
+    Task::execute($watch2());
 
     $keyNotFoundHeaderInfo = function() use($keysAPI) {
         $resp = (yield $keysAPI->get("/a/b/c/not_exist"));
@@ -369,5 +386,5 @@ call_user_func(function() {
     $casDeleteWithIndex = function() use($keysAPI) {};
 
 
-    Task::execute($watch2());
+//    Task::execute($watch2());
 });

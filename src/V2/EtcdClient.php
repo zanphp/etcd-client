@@ -39,6 +39,8 @@ class EtcdClient
         foreach ($config["endpoints"] as $endpoint) {
             if (isset($endpoint["host"]) && isset($endpoint["port"])) {
                 $endpoints[] = [$endpoint["host"], $endpoint["port"]];
+            } else {
+                throw new \InvalidArgumentException("etcd endpoints config missing host or port");
             }
         }
 
