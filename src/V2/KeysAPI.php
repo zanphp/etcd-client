@@ -41,9 +41,10 @@ class KeysAPI
     private function buildKey($key)
     {
         $key = trim($key, "/");
-        return "{$this->prefix}/{$key}";
+        $prefix = trim($this->prefix, "/");
+        return "{$prefix}/{$key}";
     }
-
+    
     /**
      * @var $response \Zan\Framework\Network\Common\Response $response
      * @return Error|Response

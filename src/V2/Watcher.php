@@ -94,7 +94,7 @@ class Watcher
     {
         try {
             /** @var Response|Error $resp */
-            $resp = (yield $this->keysApi->get($this->key));
+            $resp = (yield $this->keysApi->get($this->key, $this->getOpts));
             $currentIndex = $resp->header->etcdIndex;
             $this->subscriber->updateWaitIndex($currentIndex);
             $this->running = true;
