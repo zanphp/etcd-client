@@ -41,7 +41,7 @@ class KeysAPI
     private function buildKey($key)
     {
         $key = trim($key, "/");
-        $prefix = trim($this->prefix, "/");
+        $prefix = rtrim($this->prefix, "/");
         return "{$prefix}/{$key}";
     }
     
