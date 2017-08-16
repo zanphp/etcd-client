@@ -2,9 +2,9 @@
 
 namespace ZanPHP\EtcdClient\V2;
 
-use Zan\Framework\Network\Common\Exception\UnexpectedResponseException;
-use Zan\Framework\Network\Common\HttpClient;
-use Zan\Framework\Utilities\Types\Json;
+use ZanPHP\Exception\Network\UnexpectedResponseException;
+use ZanPHP\HttpClient\HttpClient;
+use ZanPHP\Support\Json;
 
 
 /**

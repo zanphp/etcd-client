@@ -3,9 +3,9 @@
 namespace ZanPHP\EtcdClient\V2;
 
 
-use Kdt\Iron\NSQ\Foundation\Timer;
-use Zan\Framework\Foundation\Coroutine\Task;
-use Zan\Framework\Network\Common\Exception\HttpClientTimeoutException;
+use ZanPHP\Coroutine\Task;
+use ZanPHP\HttpClient\Exception\HttpClientTimeoutException;
+use ZanPHP\Timer\Timer;
 
 class Watcher
 {
