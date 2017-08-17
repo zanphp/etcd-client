@@ -152,7 +152,7 @@ class Watcher
     {
         if ($this->isFullUpdate) {
             $getResp = (yield $this->keysApi->get($this->key, $this->getOpts)); // retry ~
-            $nextIndex = $getResp->header->etcdIndex;
+            $nextIndex = max($watchResp->index, $getResp->header->etcdIndex); // get的index一定会被watch的大吧!!!
             $nextResp = $getResp;
         } else {
             $nextIndex = $this->getNextWaitIndex($watchResp);
