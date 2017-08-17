@@ -123,7 +123,7 @@ class Watcher
 
                 if ($watchResp instanceof Error) {
                     $error = $watchResp;
-                    sys_error("service chain etcd watch error: " . $error);
+                    sys_error("etcd watch error: " . $error);
                     // 401 错误, 重新拉取后watch
                     if ($error->isEventIndexCleared()) {
                         $this->running = false;
