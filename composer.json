@@ -8,11 +8,18 @@
     "zanphp/support": "dev-master",
     "zanphp/http-client": "dev-master",
     "zanphp/timer": "dev-master",
-    "zanphp/coroutine": "dev-master"
+    "zanphp/coroutine": "dev-master",
+    "zanphp/config":"dev-master",
+    "zanphp/testing": "dev-master"
   },
   "autoload": {
     "psr-4": {
-      "ZanPHP\\EtcdClient\\": "src/"
+      "ZanPHP\\EtcdClient\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ZanPHP\\EtcdClient\\Tests\\": "tests"
     }
   },
   "extra": {
