@@ -8,7 +8,9 @@
     "zanphp/support": "dev-master",
     "zanphp/http-client": "dev-master",
     "zanphp/timer": "dev-master",
-    "zanphp/coroutine": "dev-master",
+    "zanphp/coroutine": "dev-master"
+  },
+  "require-dev": {
     "zanphp/config":"dev-master",
     "zanphp/testing": "dev-master"
   },
